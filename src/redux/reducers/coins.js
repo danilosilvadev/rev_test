@@ -1,6 +1,7 @@
 import {
   REQUEST_COIN,
-  REQUEST_WALLET
+  REQUEST_WALLET,
+  UPDATE_WALLET
 } from '../actionTypes/index';
 
 const req = (state = {}, action) => {
@@ -10,12 +11,15 @@ const req = (state = {}, action) => {
         ...state, currencies: action.payload
       }
       case REQUEST_WALLET:
-        console.log(action.payload)
         return {
           ...state, wallet: action.payload
         }
-        default:
-          return state
+        case UPDATE_WALLET:
+          return {
+            ...state, wallet: action.payload
+          }
+          default:
+            return state
   }
 }
 

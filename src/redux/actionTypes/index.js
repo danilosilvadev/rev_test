@@ -1,2 +1,3 @@
 export const REQUEST_COIN = 'REQUEST_COIN'
 export const REQUEST_WALLET = 'REQUEST_WALLET'
+export const UPDATE_WALLET = 'UPDATE_WALLET'

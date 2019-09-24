@@ -12,3 +12,8 @@ export const getWalletAction = wallet => ({
   type: REQUEST_WALLET,
   payload: wallet,
 })
+
+export const updateWalletAction = (walletUpdate) => ({
+  type: REQUEST_WALLET,
+  payload: walletUpdate,
+})

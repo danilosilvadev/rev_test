@@ -10,6 +10,7 @@ import pagination from './pagination'
 import getCurrency from './currency'
 import convertCurrency from './convertCurrency'
 import filterObject from './filterObject'
+import pickNumber from './pickNumber'
 
 export {
   randomString,
@@ -19,5 +20,6 @@ export {
   pagination,
   getCurrency,
   convertCurrency,
-  filterObject
+  filterObject,
+  pickNumber
 }

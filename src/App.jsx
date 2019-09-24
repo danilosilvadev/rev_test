@@ -1,115 +1,162 @@
-import React, { useEffect, useReducer } from 'react'
+import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import _ from 'lodash'
+import styled from 'styled-components'
 import { reqs, initialState } from './redux'
 import './App.css'
 import { ExchangeView, WalletView } from './components'
-import { filterObject, convertCurrency } from './utils'
+import { filterObject, convertCurrency, pickNumber } from './utils'
 
 function App(props) {
-  const { getCurrencies, currencies } = props
-  const [stateForm, dispatchForm] = useReducer(formReducer, initialStateForm)
+  const { getCurrencies, currencies, updateWallet, wallet } = props
+  const [coin, setCoin] = useState({ actual: '', next: '' })
+  const [actualCurrency, setActualCurrency] = useState('')
+  const [nextCurrency, setNextCurrency] = useState('')
 
   useEffect(() => {
     getCurrencies()
   }, [getCurrencies])
 
+  // console.log(currencies[nextCurrency], 'currencias', nextCurrency)
+
   return (
-    <div className="App f f-justify-center w-100 h-100 p-4 c-white f-column c-bg-main ">
-      <header>Convert Coin</header>
-      <WalletView />
-      <section className="f f-column p-3 f-align-center">
-        <section className="m-bottom-4 m-top-2 f f-justify-between w-30">
-          <input
-            className="m-right-2"
-            value={stateForm.actualCoin}
-            onChange={e => {
-              dispatchForm({
-                type: formTypes.COIN,
-                actualCoin: e.target.value,
-                nextCoin: convertCurrency({
-                  actualCoin: Number(e.target.value),
-                  currency: currencies[stateForm.nextCurrency],
-                  currencyID: stateForm.nextCurrency,
-                }),
-              })
-            }}
-          />
-          <ExchangeView
-            currencies={currencies}
-            action={{ dispatchForm, name: 'actualCurrency', stateForm }}
-          />
-        </section>
-        {stateForm.actualCurrency ? (
-          <form className="f f-column w-30" onSubmit={() => {}}>
-            <div className="f f-justify-between m-bottom-2">
-              {stateForm.nextCurrency ? (
-                <span className="m-right-2">{stateForm.nextCoin}</span>
-              ) : null}
+    <div className="App f c-white f-column c-bg-main p-left-4">
+      <section className="f f-column f-align-center">
+        <WalletView />
+        <section className="f f-column">
+          <section className="m-bottom-4 m-top-2 f f-column">
+            <header className="m-bottom-3">
+              Choose the currency you want to exchange
+            </header>
+            <section className="f f-align-center f-justify-between">
+              From
               <ExchangeView
-                currencies={filterObject(currencies, stateForm.actualCurrency)}
-                action={{ dispatchForm, name: 'nextCurrency', stateForm }}
+                currencies={currencies}
+                setCurrency={setActualCurrency}
+                currency={{ actualCurrency, nextCurrency }}
+                coin={coin}
+                setCoin={setCoin}
               />
-            </div>
-            <button
-              type="submit"
-              className="clear-button c-bg-main c-white font-size-1-5"
-            >
-              Exchange
-            </button>
-          </form>
-        ) : null}
+              to
+              <ExchangeView
+                currencies={filterObject(currencies, actualCurrency)}
+                setCurrency={setNextCurrency}
+                currency={{ actualCurrency, nextCurrency }}
+                coin={coin}
+                setCoin={setCoin}
+              />
+            </section>
+            {actualCurrency && nextCurrency ? (
+              <section>
+                <form
+                  className="f f-align-center f-justify-between"
+                  onSubmit={e => {
+                    e.preventDefault()
+                    updateWallet({
+                      ...wallet,
+                      [actualCurrency]:
+                        Number(wallet[actualCurrency]) - Number(coin.actual),
+                      [nextCurrency]:
+                        Number(pickNumber(coin.next)) +
+                        Number(wallet[nextCurrency]),
+                    })
+                  }}
+                >
+                  <div className="f f-justify-start f-align-center">
+                    <span className="font-size-2 m-right-2"> From</span>
+                    <StyledInput
+                      placeholder="Coins"
+                      className="m-top-2"
+                      value={coin.actual}
+                      onChange={e => {
+                        setCoin({
+                          actual: e.target.value,
+                          next: convertCurrency({
+                            value: Number(e.target.value),
+                            actualCurrency: currencies[actualCurrency],
+                            nextCurrency: currencies[nextCurrency],
+                            currencyID: nextCurrency,
+                          }),
+                        })
+                      }}
+                    />
+                  </div>
+                  <div className="f f-justify-start f-align-center font-size-2">
+                    <span className=" m-right-2"> To</span>
+                    <div className="f f-justify-end m-bottom-2 f-align-center">
+                      <div className="f f-column">
+                        <span className="m-top-2 m-bottom-2 font-size-2">
+                          {coin.next}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <StyledButton type="submit" className="font-size-1-5 m-top-4">
+                    Exchange
+                  </StyledButton>
+                </form>
+              </section>
+            ) : null}
+          </section>
+        </section>
       </section>
     </div>
   )
 }
 
-const formTypes = {
-  COIN: 'COIN',
-  ACTUAL_CURRENCY: 'ACTUAL_CURRENCY',
-  NEXT_CURRENCY: 'NEXT_CURRENCY',
-}
-
-const initialStateForm = {
-  actualCoin: 0,
-  nextCoin: 0,
-  actualCurrency: '',
-  nextCurrency: '',
-}
-
-const formReducer = (state, action) => {
-  switch (action.type) {
-    case formTypes.COIN:
-      return {
-        ...state,
-        actualCoin: action.actualCoin,
-        nextCoin: action.nextCoin,
-      }
-    case formTypes.ACTUAL_CURRENCY:
-      return {
-        ...state,
-        actualCurrency: action.actualCurrency,
-      }
-    case formTypes.NEXT_CURRENCY:
-      return {
-        ...state,
-        nextCurrency: action.nextCurrency,
-      }
-    default:
-      return state
+const StyledButton = styled.button`
+  background-color: #1572b9;
+  color: white;
+  transition: 0.3s;
+  border: 1px solid white;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 5px;
+  &:hover {
+    background-color: white;
+    color: #1572b9;
   }
-}
+`
+
+const StyledInput = styled.input`
+  -webkit-appearance: none;
+  outline: none;
+  height: 2rem;
+  color: white;
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid white;
+  font-size: 2rem;
+  caret-color: white;
+  ::placeholder {
+    /* Firefox, Chrome, Opera */
+    color: #8ec1e5;
+  }
+
+  :-ms-input-placeholder {
+    /* Internet Explorer 10-11 */
+    color: #8ec1e5;
+  }
+
+  ::-ms-input-placeholder {
+    /* Microsoft Edge */
+    color: #8ec1e5;
+  }
+`
 
 const mapStateToProps = ({ coin }) => {
   return {
     currencies: !_.isEmpty(coin.currencies)
       ? coin.currencies
       : initialState.currencies,
+    wallet: !_.isEmpty(coin.wallet) ? coin.wallet : initialState.wallet,
   }
 }
 
 const mapDispatchToProps = dispatch => ({
-  getCurrencies: () => dispatch(reqs.getCurrencies()),
+  getCurrencies: () => dispatch(reqs.currencies()),
+  updateWallet: props => dispatch(reqs.wallet.updateWallet(props)),
 })
 
 export default connect(

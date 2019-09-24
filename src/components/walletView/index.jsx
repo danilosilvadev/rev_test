@@ -11,11 +11,11 @@ function WalletView(props) {
   }, [getWallet])
 
   return (
-    <section className="f f-column">
+    <section className="f f-column f-align-center m-top-2">
       <span className="f font-size-2 m-bottom-2">Wallet</span>
-      <div className="f f-column f-align-start">
+      <div className="f f-align-start">
         <span className="m-bottom-1">USD {wallet.USD}</span>
-        <span className="m-bottom-1">GBP {wallet.GBP}</span>
+        <span className="m-bottom-1 m-left-1 m-right-1">GBP {wallet.GBP}</span>
         <span>EUR {wallet.EUR}</span>
       </div>
     </section>
@@ -28,9 +28,11 @@ const mapStateToProps = ({ coin }) => {
   }
 }
 
-const mapDispatchToProps = dispatch => ({
-  getWallet: () => dispatch(reqs.getWallet()),
-})
+const mapDispatchToProps = dispatch => {
+  return {
+    getWallet: () => dispatch(reqs.wallet.getWallet()),
+  }
+}
 
 export default connect(
   mapStateToProps,

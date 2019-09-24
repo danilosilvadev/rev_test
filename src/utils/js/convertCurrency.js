@@ -1,10 +1,11 @@
 import formatCurrency from './currency'
+import pickNumber from './pickNumber'
 
 export default function ({
   value,
-  currency,
+  nextCurrency,
+  actualCurrency,
   currencyID
 }) {
-  const num = currency.match(/[0-9][0-9.]*[0-9]/, '')[0]
-  return formatCurrency(value * num, currencyID)
+  return formatCurrency((value / pickNumber(actualCurrency)) * pickNumber(nextCurrency), currencyID)
 }

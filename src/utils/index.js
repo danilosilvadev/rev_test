@@ -6,7 +6,8 @@ import {
   pagination,
   getCurrency,
   convertCurrency,
-  filterObject
+  filterObject,
+  pickNumber
 } from './js'
 
 export {
@@ -17,5 +18,6 @@ export {
   pagination,
   getCurrency,
   convertCurrency,
-  filterObject
+  filterObject,
+  pickNumber
 }
