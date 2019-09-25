@@ -13,7 +13,7 @@ export const getWalletAction = wallet => ({
   payload: wallet,
 })
 
-export const updateWalletAction = (walletUpdate) => ({
+export const updateWalletAction = (walletUpdated) => ({
   type: REQUEST_WALLET,
-  payload: walletUpdate,
+  payload: walletUpdated,
 })

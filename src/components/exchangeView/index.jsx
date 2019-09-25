@@ -16,7 +16,6 @@ export default function(props) {
             currencies[currency.actualCurrency] &&
             currencies[currency.nextCurrency]
           ) {
-            // FIXME: O SEGUNDO DROPDOWN NÃO MUDA O VALOR
             setCoin({
               ...coin,
               next: convertCurrency({
