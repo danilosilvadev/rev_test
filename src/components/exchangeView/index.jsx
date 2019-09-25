@@ -3,31 +3,42 @@ import styled from 'styled-components'
 import { convertCurrency } from '../../utils'
 
 export default function(props) {
-  const { currencies, currency, setCurrency, coin, setCoin } = props
+  const {
+    currencies,
+    currency,
+    setCurrency,
+    coin,
+    setCoin,
+    setOtherCurrency,
+  } = props
+
+  const handleChange = async e => {
+    const { value } = e.target
+    await setCurrency(value)
+    await setCoin({ actual: '', next: '' })
+    if (value === currency.nextCurrency && value !== '') {
+      await setOtherCurrency('')
+    } else if (
+      currency.nextCurrency &&
+      currency.actualCurrency &&
+      currencies[currency.actualCurrency] &&
+      currencies[currency.nextCurrency]
+    ) {
+      setCoin({
+        ...coin,
+        next: convertCurrency({
+          value: coin.actual,
+          actualCurrency: currencies[currency.actualCurrency],
+          nextCurrency: currencies[currency.nextCurrency],
+          currencyID: currency.nextCurrency,
+        }),
+      })
+    }
+  }
 
   return (
     <section>
-      <StyledSelect
-        onChange={async e => {
-          await setCurrency(e.target.value)
-          if (
-            currency.nextCurrency &&
-            currency.actualCurrency &&
-            currencies[currency.actualCurrency] &&
-            currencies[currency.nextCurrency]
-          ) {
-            setCoin({
-              ...coin,
-              next: convertCurrency({
-                value: coin.actual,
-                actualCurrency: currencies[currency.actualCurrency],
-                nextCurrency: currencies[currency.nextCurrency],
-                currencyID: currency.nextCurrency,
-              }),
-            })
-          }
-        }}
-      >
+      <StyledSelect onChange={handleChange}>
         <option value="">Selection</option>
         {Object.keys(currencies).map(currency => (
           <option value={currency} key={currency}>

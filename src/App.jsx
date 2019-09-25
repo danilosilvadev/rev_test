@@ -19,15 +19,54 @@ function App(props) {
 
   useEffect(() => {
     getCurrencies()
-    /** 
-     * setInterval(() => {
+    setInterval(() => {
       getCurrencies()
     }, 10000)
-     * 
-     */
   }, [getCurrencies])
 
-  // console.log(currencies[nextCurrency], 'currencias', nextCurrency)
+  const handleUpdateWallet = () => {
+    if (coin.actual === '') return
+    updateWallet({
+      ...wallet,
+      [actualCurrency]: handleDecreasePocket(actualCurrency),
+      [nextCurrency]: handleRaisePocket(nextCurrency),
+    })
+  }
+
+  const loss = Number(wallet[actualCurrency]) - Number(coin.actual)
+
+  const handleRaisePocket = currency => {
+    return loss >= 0
+      ? (Number(wallet[currency]) + Number(pickNumber(coin.next))).toFixed(2)
+      : wallet[currency]
+  }
+
+  const handleDecreasePocket = currency => {
+    if (loss >= 0) {
+      setCoin({ next: '', actual: '' })
+      setInsuficientFounds(false)
+      return loss.toFixed(2)
+    } else {
+      setInsuficientFounds(true)
+      return wallet[currency]
+    }
+  }
+
+  const handleChange = e => {
+    const input = e.target.value.match(/\d+/g)
+      ? e.target.value.match(/\d+/g)[0]
+      : ''
+    setCoin({
+      actual: input,
+      next: convertCurrency({
+        value: Number(input),
+        actualCurrency: currencies[actualCurrency],
+        nextCurrency: currencies[nextCurrency],
+        currencyID: nextCurrency,
+      }),
+    })
+    setInsuficientFounds(false)
+  }
 
   return (
     <div className="App f c-white f-column">
@@ -43,6 +82,7 @@ function App(props) {
               <ExchangeView
                 currencies={currencies}
                 setCurrency={setActualCurrency}
+                setOtherCurrency={setNextCurrency}
                 currency={{ actualCurrency, nextCurrency }}
                 coin={coin}
                 setCoin={setCoin}
@@ -66,19 +106,7 @@ function App(props) {
                       placeholder="Coins"
                       value={coin.actual}
                       maxLength="7"
-                      onChange={e => {
-                        const input = e.target.value.match(/\d+/g)
-                        if (!input && e.target.value !== '') return
-                        setCoin({
-                          actual: input || '',
-                          next: convertCurrency({
-                            value: Number(input),
-                            actualCurrency: currencies[actualCurrency],
-                            nextCurrency: currencies[nextCurrency],
-                            currencyID: nextCurrency,
-                          }),
-                        })
-                      }}
+                      onChange={handleChange}
                     />
                   </div>
                   <div className="f f-justify-start f-align-center font-size-2">
@@ -96,25 +124,15 @@ function App(props) {
               </section>
             ) : null}
             <StyledButton
-              onClick={() => {
-                if (coin.actual === '') return
-                updateWallet({
-                  ...wallet,
-                  [actualCurrency]: handleDecreasePocket(
-                    wallet,
-                    actualCurrency,
-                    coin.actual,
-                    setInsuficientFounds
-                  ),
-                  [nextCurrency]: handleRaisePocket(
-                    wallet,
-                    nextCurrency,
-                    pickNumber(coin.next),
-                    actualCurrency
-                  ),
-                })
-                setCoin({ ...coin, actual: '' })
-              }}
+              onClick={handleUpdateWallet}
+              disabled={
+                !(
+                  nextCurrency &&
+                  actualCurrency &&
+                  coin.actual &&
+                  !insuficientFounds
+                )
+              }
               className="font-size-1-5 m-top-4 m-0-auto"
             >
               Exchange
@@ -133,25 +151,6 @@ function App(props) {
   )
 }
 
-const handleRaisePocket = (wallet, currency, coin, lossCurrency) => {
-  const loss = Number(wallet[lossCurrency]) - Number(coin)
-  console.log(loss, 'embrazando')
-  return loss >= 0
-    ? (Number(wallet[currency]) + Number(coin)).toFixed(2)
-    : wallet[currency]
-}
-
-const handleDecreasePocket = (wallet, currency, coin, setInsuficientFounds) => {
-  const loss = Number(wallet[currency]) - Number(coin)
-  if (loss >= 0) {
-    setInsuficientFounds(false)
-    return loss.toFixed(2)
-  } else {
-    setInsuficientFounds(true)
-    return wallet[currency]
-  }
-}
-
 const StyledButton = styled.button`
   background-color: #1572b9;
   color: white;
@@ -160,9 +159,12 @@ const StyledButton = styled.button`
   padding: 0.5rem;
   cursor: pointer;
   border-radius: 5px;
-  &:hover {
+  &:hover:enabled {
     background-color: white;
     color: #1572b9;
+  }
+  &:disabled {
+    cursor: not-allowed;
   }
 `
 
@@ -213,5 +215,3 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(App)
-
-// To add to pre-commit       "pre-commit": "lint-staged && react-scripts test && flow check"
